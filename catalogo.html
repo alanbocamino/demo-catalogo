@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - Portal do Representante</title>
+    <!-- Fonte para simular o Código de Barras -->
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Globais */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; color: #333; }
+        
+        /* Cabeçalho */
+        header { background-color: #0c2461; color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 100; }
+        header h1 { font-size: 1.5rem; }
+        .user-info { font-size: 0.9rem; color: #a4b0be; }
+
+        /* Layout Principal */
+        .container { display: flex; max-width: 1200px; margin: 20px auto; padding: 0 15px; gap: 20px; align-items: flex-start; }
+        
+        /* Menu Lateral / Categorias */
+        aside { flex: 1; min-width: 250px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 80px; }
+        aside h3 { margin-bottom: 15px; color: #0c2461; border-bottom: 2px solid #4a69bd; padding-bottom: 8px; font-size: 1.1rem; }
+        aside ul { list-style: none; }
+        aside ul li { padding: 10px 15px; margin-bottom: 5px; border-radius: 5px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; background-color: #f8f9fa; }
+        aside ul li:hover { background-color: #e2e8f0; }
+        aside ul li.ativo { background-color: #4a69bd; color: white; font-weight: bold; }
+
+        /* Lista de Produtos */
+        main { flex: 3; width: 100%; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* Card do Produto */
+        .card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; gap: 20px; align-items: center; transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .card.oculto { display: none; } /* Classe para ocultar produtos no filtro */
+        
+        /* Imagem */
+        .card img { width: 120px; height: 120px; object-fit: cover; border-radius: 6px; border: 1px solid #f1f2f6; }
+        
+        /* Informações */
+        .info { flex: 2; display: flex; flex-direction: column; gap: 5px; }
+        .info h4 { font-size: 1.2rem; color: #2f3542; }
+        .desc { font-size: 0.9rem; color: #747d8c; line-height: 1.4; }
+        .meta { display: flex; gap: 15px; font-size: 0.85rem; margin-top: 5px; flex-wrap: wrap; }
+        .meta span { background: #f1f2f6; padding: 4px 8px; border-radius: 4px; color: #57606f; }
+        
+        /* Código de Barras */
+        .barcode-container { margin-top: 10px; }
+        .barcode-font { font-family: 'Libre Barcode 39 Text', cursive; font-size: 2.2rem; line-height: 1; color: #2f3542; }
+        .ean-text { font-size: 0.75rem; color: #a4b0be; display: block; margin-top: -5px; }
+
+        /* Preço */
+        .price-tag { flex: 1; text-align: right; border-left: 1px solid #f1f2f6; padding-left: 20px; }
+        .price { font-size: 1.6rem; color: #2ed573; font-weight: bold; }
+        .price small { font-size: 0.85rem; color: #747d8c; font-weight: normal; display: block; margin-top: 5px; }
+
+        /* Responsividade para Tablets e Celulares */
+        @media (max-width: 850px) {
+            .container { flex-direction: column; margin-top: 10px; gap: 10px; }
+            
+            /* Menu mobile tipo abas rolantes */
+            aside { width: 100%; position: static; padding: 10px; }
+            aside h3 { display: none; } /* Oculta o título no mobile para economizar espaço */
+            aside ul { display: flex; overflow-x: auto; white-space: nowrap; gap: 10px; padding-bottom: 5px; }
+            aside ul::-webkit-scrollbar { height: 4px; }
+            aside ul::-webkit-scrollbar-thumb { background-color: #ced6e0; border-radius: 4px; }
+            aside ul li { margin-bottom: 0; padding: 8px 12px; flex-shrink: 0; }
+
+            /* Ajuste do Card para Mobile */
+            .card { flex-direction: column; align-items: flex-start; padding: 15px; gap: 10px; }
+            .card img { width: 100%; height: 200px; }
+            .price-tag { width: 100%; text-align: left; border-left: none; border-top: 1px solid #f1f2f6; padding-left: 0; padding-top: 15px; }
+            .price { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Catálogo de Produtos</h1>
+        <div class="user-info">Representante: <strong>Admin</strong></div>
+    </header>
+
+    <div class="container">
+        <!-- Menu de Categorias Funcional -->
+        <aside>
+            <h3>Categorias</h3>
+            <ul id="menuCategorias">
+                <li class="ativo" data-target="todos">Todos os Produtos</li>
+                <li data-target="cervejas">Cervejas</li>
+                <li data-target="destilados">Destilados</li>
+                <li data-target="vinhos">Vinhos</li>
+                <li data-target="nao-alcoolicos">Não Alcoólicos</li>
+            </ul>
+        </aside>
+
+        <!-- Lista de Produtos -->
+        <main id="listaProdutos">
+            
+            <!-- Produto 1: Cerveja -->
+            <div class="card" data-categoria="cervejas">
+                <img src="https://images.unsplash.com/photo-1614316937577-3e445353c7c2?auto=format&fit=crop&w=300&q=80" alt="Cerveja">
+                <div class="info">
+                    <h4>Cerveja Artesanal IPA 330ml</h4>
+                    <p class="desc">Fardo termoencolhível com 12 unidades. Garrafa de vidro.</p>
+                    <div class="meta">
+                        <span><strong>SKU:</strong> CERV-IPA-330</span>
+                        <span><strong>Estoque:</strong> 145 fardos</span>
+                    </div>
+                    <div class="barcode-container">
+                        <div class="barcode-font">*7891011121314*</div>
+                        <span class="ean-text">EAN: 7891011121314</span>
+                    </div>
+                </div>
+                <div class="price-tag">
+                    <div class="price">R$ 55,90</div>
+                    <small>Preço do Fardo (12x)</small>
+                </div>
+            </div>
+
+            <!-- Produto 2: Destilado -->
+            <div class="card" data-categoria="destilados">
+                <img src="https://images.unsplash.com/photo-1527281400683-1aae777175f8?auto=format&fit=crop&w=300&q=80" alt="Whisky">
+                <div class="info">
+                    <h4>Whisky Importado 12 Anos 1L</h4>
+                    <p class="desc">Caixa com 6 garrafas. Embalagem original do fabricante.</p>
+                    <div class="meta">
+                        <span><strong>SKU:</strong> WHI-12Y-1L</span>
+                        <span><strong>Estoque:</strong> 30 caixas</span>
+                    </div>
+                    <div class="barcode-container">
+                        <div class="barcode-font">*7895566778899*</div>
+                        <span class="ean-text">EAN: 7895566778899</span>
+                    </div>
+                </div>
+                <div class="price-tag">
+                    <div class="price">R$ 950,00</div>
+                    <small>Preço da Caixa (6x)</small>
+                </div>
+            </div>
+
+            <!-- Produto 3: Vinho -->
+            <div class="card" data-categoria="vinhos">
+                <img src="https://images.unsplash.com/photo-1584225064785-c62a8b43d148?auto=format&fit=crop&w=300&q=80" alt="Vinho">
+                <div class="info">
+                    <h4>Vinho Tinto Seco Reservado 750ml</h4>
+                    <p class="desc">Caixa de papelão com 6 garrafas. Uva Cabernet Sauvignon.</p>
+                    <div class="meta">
+                        <span><strong>SKU:</strong> VIN-CAB-750</span>
+                        <span><strong>Estoque:</strong> 82 caixas</span>
+                    </div>
+                    <div class="barcode-container">
+                        <div class="barcode-font">*7892233445566*</div>
+                        <span class="ean-text">EAN: 7892233445566</span>
+                    </div>
+                </div>
+                <div class="price-tag">
+                    <div class="price">R$ 179,40</div>
+                    <small>Preço da Caixa (6x)</small>
+                </div>
+            </div>
+
+            <!-- Produto 4: Não Alcoólico -->
+            <div class="card" data-categoria="nao-alcoolicos">
+                <img src="https://images.unsplash.com/photo-1560508180-03f285f67ded?auto=format&fit=crop&w=300&q=80" alt="Refrigerante">
+                <div class="info">
+                    <h4>Refrigerante Cola Lata 350ml</h4>
+                    <p class="desc">Fardo com 12 latas. Venda exclusiva para CNPJ.</p>
+                    <div class="meta">
+                        <span><strong>SKU:</strong> REF-COL-350</span>
+                        <span><strong>Estoque:</strong> 500 fardos</span>
+                    </div>
+                    <div class="barcode-container">
+                        <div class="barcode-font">*7899988776655*</div>
+                        <span class="ean-text">EAN: 7899988776655</span>
+                    </div>
+                </div>
+                <div class="price-tag">
+                    <div class="price">R$ 28,90</div>
+                    <small>Preço do Fardo (12x)</small>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Script para funcionamento dos Filtros -->
+    <script>
+        const botoesCategoria = document.querySelectorAll('#menuCategorias li');
+        const produtos = document.querySelectorAll('.card');
+
+        botoesCategoria.forEach(botao => {
+            botao.addEventListener('click', () => {
+                // Remove a classe 'ativo' de todos os botões e adiciona no clicado
+                botoesCategoria.forEach(b => b.classList.remove('ativo'));
+                botao.classList.add('ativo');
+
+                // Pega a categoria desejada
+                const categoriaAlvo = botao.getAttribute('data-target');
+
+                // Mostra/esconde os produtos
+                produtos.forEach(produto => {
+                    if (categoriaAlvo === 'todos') {
+                        produto.classList.remove('oculto');
+                    } else {
+                        if (produto.getAttribute('data-categoria') === categoriaAlvo) {
+                            produto.classList.remove('oculto');
+                        } else {
+                            produto.classList.add('oculto');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
